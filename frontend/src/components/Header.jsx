@@ -60,7 +60,7 @@ const Header = () => {
             )}
               <button className="flexCenter gap-x-2 !px-5 btn-dark">
                 <LuUserRound className="text-xl"/>
-                <span>Log In</span>
+       
               </button>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import React from 'react'
-import Header from '../components/Header'
 import Hero from '../components/Hero'
 import Features from '../components/Features'
 import Achievements from '../components/Achievements'
@@ -10,7 +9,6 @@ import Testimonials from '../components/Testimonials'
 const Home = () => {
   return (
     <>
-    <Header/>
     <main className='mx-auto max-w-[1440px] bg-gradient-to-r from-primary via-white to-white'>
       <Hero/>
       <Features/>
