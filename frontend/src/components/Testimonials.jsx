@@ -1,7 +1,7 @@
 import React from 'react'
 import {FaStar, FaCheck} from "react-icons/fa"
-import user1 from "../assets/Testimonials/user1.png"
-import user2 from "../assets/Testimonials/user2.png"
+import user1 from "../assets/testimonials/user1.png"
+import user2 from "../assets/testimonials/user2.png"
 import property1 from "../assets/img1.png"
 import property2 from "../assets/img2.png"
 import property3 from "../assets/img3.png"
