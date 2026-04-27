@@ -1,10 +1,10 @@
 import React from 'react'
 import {Link} from "react-router-dom"
 import {VscSettings} from "react-icons/vsc"
-// Import Swiper React components
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-// Import Swiper styles
+// Import Swiper styl
 import 'swiper/css';
 import 'swiper/css/pagination';
 
