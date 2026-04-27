@@ -2,7 +2,7 @@ import React from 'react'
 import Hero from '../components/Hero'
 import Features from '../components/Features'
 import Achievements from '../components/Achievements'
-import About from '../components/about'
+import About from '../components/About'
 import Properties from '../components/Properties'
 import Testimonials from '../components/Testimonials'
 
