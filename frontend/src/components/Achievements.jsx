@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import CountUp from 'react-countup';
 import {LiaCertificateSolid} from "react-icons/lia"
-import About from './about';
+import About from './About';
 
 const Achievements = () => {
 
