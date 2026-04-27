@@ -12,7 +12,7 @@ import 'swiper/css/pagination';
 // import required modules
 import { Autoplay} from 'swiper/modules';
 import { PROPERTIES } from '../constant/data';
-import Item from './item';
+import Item from './Item';
 
 
 const Properties = () => {
