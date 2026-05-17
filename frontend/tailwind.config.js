@@ -29,7 +29,7 @@ export default {
         "4xl": "2200px"
       },
       backgroundImage: {
-        hero: "url('src/assets/bg.png')" // ✅ Also fixed typo in "assests"
+        hero: "url('./assets/bg.png')" // ✅ Fixed path to resolve correctly in Vite
       }
     }
   },
