@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://property-search-app-3rd-try.onrender.com/api/:path*"
+    }
+  ]
+}
