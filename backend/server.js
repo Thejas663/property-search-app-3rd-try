@@ -3,20 +3,18 @@ import { mongoConnect } from "./config/dbconnect.js";
 import dotenv from "dotenv"
 dotenv.config()
 
-const port = 8000
+const port = process.env.PORT || 8001
 
-const startServer = async()=>{
-    try{
-        await mongoConnect();
-        app.listen(port, () => {
-            console.log(`Example app listening on port ${port}`)
-        })
-    }catch(err){
-        console.log("Server failed to start: ",err)
-        process.exit(1)
-    }
-   
-    
+const startServer = async () => {
+  try {
+    await mongoConnect();
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`)
+    })
+  } catch (err) {
+    console.log("Server failed to start: ", err)
+    process.exit(1)
+  }
 }
 
 startServer();
