@@ -15,9 +15,9 @@ export const  signUp = async (req,res)=>{
         })
     }catch(err){
         console.log(err)
-        res.status(500).json({
+        res.status(400).json({
             success:false,
-            message:"User Creation Failed"
+            message:err.message || "User Creation Failed"
         })
 
     }
@@ -30,15 +30,15 @@ export const  signin = async (req,res)=>{
     try{
         const data = await SignIn(req.body)
 
-        res.status(201).json({
+        res.status(200).json({
             success:true,
             message:"User SignedIn Successfully",
             data
         })
     }catch(err){
-        res.status(500).json({
+        res.status(400).json({
             success:false,
-            message:err
+            message:err.message || "Password is Incorrect"
         })
 
     }
