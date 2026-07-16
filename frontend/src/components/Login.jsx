@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -6,6 +6,12 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem('loggedIn') === 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +31,9 @@ const Login = () => {
 
       localStorage.setItem('loggedIn', 'true');
       localStorage.setItem('currentUser', JSON.stringify(data.data.user));
-      navigate('/');
+      localStorage.setItem('token', data.data.token);
+      window.dispatchEvent(new Event('storage'));
+      navigate('/profile');
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     }

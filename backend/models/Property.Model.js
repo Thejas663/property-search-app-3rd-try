@@ -6,7 +6,6 @@ const propertySchema = new mongoose.Schema({
     },
     description:{
         type:String,
-        unique:true,
         required:true
     },
     price:{
@@ -15,6 +14,27 @@ const propertySchema = new mongoose.Schema({
     },
     image:{
         type:String,
+        required:true
+    },
+    city:{
+        type:String,
+        required:true
+    },
+    bedrooms:{
+        type:Number,
+        default:0
+    },
+    bathrooms:{
+        type:Number,
+        default:0
+    },
+    parkings:{
+        type:Number,
+        default:0
+    },
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required:true
     }
 

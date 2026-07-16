@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {Link} from "react-router-dom"
 import {VscSettings} from "react-icons/vsc"
 
@@ -16,13 +16,44 @@ import Item from './Item';
 
 
 const Properties = () => {
+  const [propertiesList, setPropertiesList] = useState(PROPERTIES);
+
+  useEffect(() => {
+    const fetchDBProperties = async () => {
+      try {
+        const response = await fetch('/api/properties/property');
+        if (response.ok) {
+          const data = await response.json();
+          const formatted = (data.data || []).map((p) => ({
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            price: p.price,
+            image: p.image,
+            city: p.city || 'Unknown',
+            facilities: {
+              bedrooms: p.bedrooms || 0,
+              bathrooms: p.bathrooms || 0,
+              parkings: p.parkings || 0
+            }
+          }));
+          // Show DB-fetched properties first, followed by mock data
+          setPropertiesList([...formatted, ...PROPERTIES]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch properties from DB", err);
+      }
+    };
+    fetchDBProperties();
+  }, []);
+
   return (
     <section className='max-padd-container'>
         <div className='py-16 xl:py-28 rounded-3xl'>
             <span className='medium-18'>Your future Home awaits!</span>
             <h2 className='h2'>Find your dream here</h2>
             <div className='flexBetween mt-8 mb-6'>
-                <h5><span className='font-bold'>Showing 1-9</span> out of 3k properties</h5>
+                <h5><span className='font-bold'>Showing 1-{propertiesList.length}</span> properties</h5>
                 <Link to={"/"} className='bg-secondary text-white text-2xl rounded-md p-2 flexCenter'>
                 <VscSettings/>
                 </Link>
@@ -51,8 +82,8 @@ const Properties = () => {
         modules={[Autoplay]}
         className="h-[488px] md:h-[533px] xl:h-[422px] mt-5"
       >
-        {PROPERTIES.slice(0,6).map((property)=>(
-          <SwiperSlide key={property.title}>
+        {propertiesList.map((property, idx)=>(
+          <SwiperSlide key={property.id || `${property.title}-${idx}`}>
             <Item property={property}/>
           </SwiperSlide>
 

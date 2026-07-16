@@ -7,21 +7,28 @@ const Navbar = ({containerStyles}) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
-    setLoggedIn(isLoggedIn);
-    if (isLoggedIn) {
-      const user = JSON.parse(localStorage.getItem('currentUser'));
-      setUsername(user?.username || '');
-    } else {
-      setUsername('');
-    }
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+      setLoggedIn(isLoggedIn);
+      if (isLoggedIn) {
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        setUsername(user?.name || user?.username || '');
+      } else {
+        setUsername('');
+      }
+    };
+
+    checkAuth();
+
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('currentUser');
-    setLoggedIn(false);
-    setUsername('');
+    localStorage.removeItem('token');
+    window.dispatchEvent(new Event('storage'));
     navigate('/login');
   };
 
@@ -41,8 +48,10 @@ const Navbar = ({containerStyles}) => {
       </NavLink>
       {loggedIn ? (
         <>
-          <span className="ml-4">Hello, {username}</span>
-          <button onClick={handleLogout} className="ml-2 text-red-500 underline">Logout</button>
+          <NavLink to={"/profile"} className={({isActive})=>isActive? "active-link py-1 ml-4":"py-1 ml-4"}>
+            Profile
+          </NavLink>
+          <button onClick={handleLogout} className="ml-4 text-red-500 font-medium">Logout</button>
         </>
       ) : (
         <>

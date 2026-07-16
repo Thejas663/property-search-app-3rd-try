@@ -8,6 +8,7 @@ import Register from './components/Register'
 import Listing from './pages/Listing'
 import Contact from './pages/Contact'
 import AddProperty from './pages/AddProperty'
+import Profile from './pages/Profile'
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/add-property" element={<AddProperty />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
       <Footer/>
     </BrowserRouter>

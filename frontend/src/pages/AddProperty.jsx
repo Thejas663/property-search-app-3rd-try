@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 
 const AddProperty = () => {
-  const [form, setForm] = useState({ title: '', description: '', price: '', image: '' });
+  const [form, setForm] = useState({ 
+    title: '', 
+    description: '', 
+    price: '', 
+    image: '',
+    city: '',
+    bedrooms: '',
+    bathrooms: '',
+    parkings: ''
+  });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -15,7 +24,8 @@ const AddProperty = () => {
     setMessage('');
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
+    const token = localStorage.getItem('token');
+    if (!currentUser || !token) {
       setError('You must be logged in to add a property.');
       return;
     }
@@ -23,8 +33,17 @@ const AddProperty = () => {
     try {
       const response = await fetch('/api/properties/property', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: currentUser, ...form, price: parseFloat(form.price) })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          ...form, 
+          price: parseFloat(form.price),
+          bedrooms: parseInt(form.bedrooms || '0', 10),
+          bathrooms: parseInt(form.bathrooms || '0', 10),
+          parkings: parseInt(form.parkings || '0', 10)
+        })
       });
       const data = await response.json();
 
@@ -33,7 +52,16 @@ const AddProperty = () => {
       }
 
       setMessage('Property added successfully!');
-      setForm({ title: '', description: '', price: '', image: '' });
+      setForm({ 
+        title: '', 
+        description: '', 
+        price: '', 
+        image: '',
+        city: '',
+        bedrooms: '',
+        bathrooms: '',
+        parkings: ''
+      });
     } catch (err) {
       setError(err.message || 'Property creation failed');
     }
@@ -50,6 +78,15 @@ const AddProperty = () => {
           name="title"
           placeholder="Property Title"
           value={form.title}
+          onChange={handleChange}
+          className="border p-2 rounded"
+          required
+        />
+        <input
+          type="text"
+          name="city"
+          placeholder="City (e.g. San Francisco)"
+          value={form.city}
           onChange={handleChange}
           className="border p-2 rounded"
           required
@@ -72,6 +109,38 @@ const AddProperty = () => {
           className="border p-2 rounded"
           required
         />
+        <div className="grid grid-cols-3 gap-2">
+          <input
+            type="number"
+            name="bedrooms"
+            placeholder="Bedrooms"
+            value={form.bedrooms}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+            min="0"
+          />
+          <input
+            type="number"
+            name="bathrooms"
+            placeholder="Bathrooms"
+            value={form.bathrooms}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+            min="0"
+          />
+          <input
+            type="number"
+            name="parkings"
+            placeholder="Parkings"
+            value={form.parkings}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+            min="0"
+          />
+        </div>
         <input
           type="text"
           name="image"

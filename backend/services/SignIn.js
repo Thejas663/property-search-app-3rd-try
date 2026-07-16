@@ -1,5 +1,6 @@
 import User from "../models/User.Model.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const SignIn = async ({email,password})=>{
     
@@ -15,12 +16,20 @@ export const SignIn = async ({email,password})=>{
    )
 
    if(isPassword){
+    const secret = process.env.JWT_SECRET || 'supersecretkey';
+    const token = jwt.sign(
+      { id: existingUser._id, name: existingUser.name, email: existingUser.email },
+      secret,
+      { expiresIn: '7d' }
+    );
+
     return{
         user:{
             id:existingUser._id,
             name:existingUser.name,
             email:existingUser.email
-        }
+        },
+        token
     }
    }
 
