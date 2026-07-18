@@ -41,4 +41,6 @@ export const propertySchema = z.object({
   bedrooms: z.number().int().nonnegative("Bedrooms must be a non-negative integer"),
   bathrooms: z.number().int().nonnegative("Bathrooms must be a non-negative integer"),
   parkings: z.number().int().nonnegative("Parkings must be a non-negative integer"),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });

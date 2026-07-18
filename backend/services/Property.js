@@ -1,9 +1,14 @@
 import PropertyModel from "../models/Property.Model.js";
 
-export const propertyMake = async ({user, title, description, price, image, city, bedrooms, bathrooms, parkings}) => {
+export const propertyMake = async ({user, title, description, price, image, city, bedrooms, bathrooms, parkings, latitude, longitude}) => {
   if (!user) {
     throw new Error("SignIn to make property")
   }
+
+  const location = (latitude !== undefined && longitude !== undefined) ? {
+    type: "Point",
+    coordinates: [longitude, latitude]
+  } : undefined;
 
   const newProperty = await PropertyModel.create({
     title,
@@ -14,7 +19,8 @@ export const propertyMake = async ({user, title, description, price, image, city
     bedrooms,
     bathrooms,
     parkings,
-    createdBy: user.id
+    createdBy: user.id,
+    ...(location && { location })
   })
 
   return {
@@ -28,7 +34,9 @@ export const propertyMake = async ({user, title, description, price, image, city
       bedrooms: newProperty.bedrooms,
       bathrooms: newProperty.bathrooms,
       parkings: newProperty.parkings,
-      createdBy: newProperty.createdBy
+      createdBy: newProperty.createdBy,
+      latitude: newProperty.location?.coordinates[1],
+      longitude: newProperty.location?.coordinates[0]
     }
   }
 }
@@ -45,7 +53,9 @@ export const getAllProperties = async () => {
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     parkings: property.parkings,
-    createdBy: property.createdBy
+    createdBy: property.createdBy,
+    latitude: property.location?.coordinates[1],
+    longitude: property.location?.coordinates[0]
   }))
 }
 
@@ -61,7 +71,9 @@ export const getUserProperties = async (userId) => {
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     parkings: property.parkings,
-    createdBy: property.createdBy
+    createdBy: property.createdBy,
+    latitude: property.location?.coordinates[1],
+    longitude: property.location?.coordinates[0]
   }))
 }
 
@@ -79,6 +91,13 @@ export const updateProperty = async (propertyId, userId, updateData) => {
     }
   })
 
+  if (updateData.latitude !== undefined && updateData.longitude !== undefined) {
+    property.location = {
+      type: "Point",
+      coordinates: [updateData.longitude, updateData.latitude]
+    }
+  }
+
   await property.save()
   return {
     id: property._id,
@@ -90,7 +109,9 @@ export const updateProperty = async (propertyId, userId, updateData) => {
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     parkings: property.parkings,
-    createdBy: property.createdBy
+    createdBy: property.createdBy,
+    latitude: property.location?.coordinates[1],
+    longitude: property.location?.coordinates[0]
   }
 }
 

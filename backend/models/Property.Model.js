@@ -36,8 +36,20 @@ const propertySchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:true
+    },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        }
     }
-
 })
+
+propertySchema.index({ location: "2dsphere" });
 
 export default mongoose.model("Property",propertySchema);
