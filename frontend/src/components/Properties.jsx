@@ -13,6 +13,7 @@ import 'swiper/css/pagination';
 import { Autoplay} from 'swiper/modules';
 import { PROPERTIES } from '../constant/data';
 import Item from './Item';
+import Map from './Map';
 
 
 const Properties = () => {
@@ -31,6 +32,8 @@ const Properties = () => {
             price: p.price,
             image: p.image,
             city: p.city || 'Unknown',
+            latitude: p.latitude,
+            longitude: p.longitude,
             facilities: {
               bedrooms: p.bedrooms || 0,
               bathrooms: p.bathrooms || 0,
@@ -58,6 +61,10 @@ const Properties = () => {
                 <VscSettings/>
                 </Link>
             </div>
+            
+            {/* Map showing all property markers */}
+            <Map properties={propertiesList} />
+
             {/* CONTAINER */}
             <Swiper
         autoplay={{

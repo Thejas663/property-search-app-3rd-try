@@ -26,6 +26,8 @@ export const PROPERTIES = [
     area: 450,
     price: 450,
     description: "Charming bungalow with modern amenities and scenic views, perfect for peaceful living.",
+    latitude: 43.7696,
+    longitude: 11.2558,
     facilities: {
       bedrooms: 3,
       bathrooms: 2,
@@ -42,6 +44,8 @@ export const PROPERTIES = [
     area: 500,
     price: 600,
     description: "A beautiful residence with a stunning ocean view, perfect for a serene escape.",
+    latitude: -33.8688,
+    longitude: 151.2093,
     facilities: {
       bedrooms: 4,
       bathrooms: 3,
@@ -58,6 +62,8 @@ export const PROPERTIES = [
     area: 420,
     price: 480,
     description: "A peaceful retreat with modern amenities and beautiful sunrise views.",
+    latitude: 35.0116,
+    longitude: 135.7681,
     facilities: {
       bedrooms: 2,
       bathrooms: 2,
@@ -74,6 +80,8 @@ export const PROPERTIES = [
     area: 550,
     price: 800,
     description: "An elegant urban property with sophisticated design and ample space.",
+    latitude: 43.6532,
+    longitude: -79.3832,
     facilities: {
       bedrooms: 5,
       bathrooms: 4,
@@ -90,6 +98,8 @@ export const PROPERTIES = [
     area: 470,
     price: 700,
     description: "A charming rustic villa with modern amenities and scenic views.",
+    latitude: 41.3851,
+    longitude: 2.1734,
     facilities: {
       bedrooms: 3,
       bathrooms: 3,
@@ -106,6 +116,8 @@ export const PROPERTIES = [
     area: 520,
     price: 680,
     description: "A luxurious penthouse with a garden grove and breathtaking views.",
+    latitude: -22.9068,
+    longitude: -43.1729,
     facilities: {
       bedrooms: 4,
       bathrooms: 3,
@@ -122,6 +134,8 @@ export const PROPERTIES = [
     area: 480,
     price: 750,
     description: "A tranquil home with majestic mountain views and modern amenities.",
+    latitude: 47.3769,
+    longitude: 8.5417,
     facilities: {
       bedrooms: 3,
       bathrooms: 2,
@@ -138,6 +152,8 @@ export const PROPERTIES = [
     area: 430,
     price: 500,
     description: "A cozy lakefront apartment with scenic views and modern amenities.",
+    latitude: -33.9249,
+    longitude: 18.4241,
     facilities: {
       bedrooms: 2,
       bathrooms: 2,
@@ -154,6 +170,8 @@ export const PROPERTIES = [
     area: 460,
     price: 520,
     description: "A serene villa with blissful surroundings and modern amenities.",
+    latitude: 13.7563,
+    longitude: 100.5018,
     facilities: {
       bedrooms: 3,
       bathrooms: 2,

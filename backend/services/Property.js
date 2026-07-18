@@ -35,8 +35,8 @@ export const propertyMake = async ({user, title, description, price, image, city
       bathrooms: newProperty.bathrooms,
       parkings: newProperty.parkings,
       createdBy: newProperty.createdBy,
-      latitude: newProperty.location?.coordinates[1],
-      longitude: newProperty.location?.coordinates[0]
+      latitude: newProperty.location?.coordinates?.[1],
+      longitude: newProperty.location?.coordinates?.[0]
     }
   }
 }
@@ -54,8 +54,8 @@ export const getAllProperties = async () => {
     bathrooms: property.bathrooms,
     parkings: property.parkings,
     createdBy: property.createdBy,
-    latitude: property.location?.coordinates[1],
-    longitude: property.location?.coordinates[0]
+    latitude: property.location?.coordinates?.[1],
+    longitude: property.location?.coordinates?.[0]
   }))
 }
 
@@ -72,8 +72,8 @@ export const getUserProperties = async (userId) => {
     bathrooms: property.bathrooms,
     parkings: property.parkings,
     createdBy: property.createdBy,
-    latitude: property.location?.coordinates[1],
-    longitude: property.location?.coordinates[0]
+    latitude: property.location?.coordinates?.[1],
+    longitude: property.location?.coordinates?.[0]
   }))
 }
 
@@ -110,8 +110,8 @@ export const updateProperty = async (propertyId, userId, updateData) => {
     bathrooms: property.bathrooms,
     parkings: property.parkings,
     createdBy: property.createdBy,
-    latitude: property.location?.coordinates[1],
-    longitude: property.location?.coordinates[0]
+    latitude: property.location?.coordinates?.[1],
+    longitude: property.location?.coordinates?.[0]
   }
 }
 
