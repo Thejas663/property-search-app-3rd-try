@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { FaLocationArrow } from 'react-icons/fa';
 
 // Fix for default marker icons in Leaflet with Vite/React
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -14,6 +15,17 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   shadowUrl: markerShadow,
 });
+
+// Programmatic map panning helper component
+const ChangeMapView = ({ center, zoom }) => {
+  const map = useMap();
+  React.useEffect(() => {
+    if (center) {
+      map.setView(center, zoom || map.getZoom(), { animate: true });
+    }
+  }, [center, zoom, map]);
+  return null;
+};
 
 // Component to handle map clicks and callback the parent
 const MapEventsHandler = ({ onClick }) => {
@@ -40,6 +52,11 @@ const AddProperty = () => {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [mapCenter, setMapCenter] = useState([20.5937, 78.9629]);
+  const [mapZoom, setMapZoom] = useState(5);
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -51,6 +68,65 @@ const AddProperty = () => {
       latitude: latlng.lat,
       longitude: latlng.lng,
     }));
+  };
+
+  const handleSearchChange = async (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    if (val.length > 2) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data);
+        }
+      } catch (err) {
+        console.error("Geocoding failed", err);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSelectSuggestion = (s) => {
+    const lat = parseFloat(s.lat);
+    const lon = parseFloat(s.lon);
+    setMapCenter([lat, lon]);
+    setMapZoom(13);
+    setSearchQuery(s.display_name);
+    setSuggestions([]);
+    setForm((prevForm) => ({
+      ...prevForm,
+      latitude: lat,
+      longitude: lon,
+    }));
+  };
+
+  const handleUseMyLocation = () => {
+    if (navigator.geolocation) {
+      setLoadingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          setMapCenter([lat, lon]);
+          setMapZoom(13);
+          setForm((prevForm) => ({
+            ...prevForm,
+            latitude: lat,
+            longitude: lon,
+          }));
+          setLoadingLocation(false);
+        },
+        (err) => {
+          console.error("Error getting location", err);
+          alert("Could not retrieve your location. Make sure location permissions are enabled.");
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -106,12 +182,11 @@ const AddProperty = () => {
         latitude: '',
         longitude: ''
       });
+      setSearchQuery('');
     } catch (err) {
       setError(err.message || 'Property creation failed');
     }
   };
-
-  const defaultCenter = [20.5937, 78.9629]; // Default coordinates
 
   return (
     <div className="mx-auto mt-20 max-w-[800px] p-8">
@@ -122,16 +197,53 @@ const AddProperty = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Side: Click to Select Map */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Click on the map to select the property location *
-          </label>
-          <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow border border-gray-200 relative z-10">
+          {/* Autocomplete Search Input */}
+          <div className="relative mb-3 z-20">
+            <input
+              type="text"
+              placeholder="Search address or city..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm"
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-30">
+                {suggestions.map((s) => (
+                  <li
+                    key={s.place_id}
+                    onClick={() => handleSelectSuggestion(s)}
+                    className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs border-b border-gray-100 last:border-0 transition-colors"
+                  >
+                    {s.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="flex justify-between items-center mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              Select property location *
+            </label>
+            <button
+              type="button"
+              onClick={handleUseMyLocation}
+              disabled={loadingLocation}
+              className="flex items-center gap-1 bg-green-50 hover:bg-green-100 disabled:bg-gray-100 text-green-700 text-xs font-semibold rounded-lg px-3 py-1.5 border border-green-200 transition-colors cursor-pointer"
+            >
+              <FaLocationArrow className={loadingLocation ? "animate-spin" : ""} />
+              {loadingLocation ? "Locating..." : "Use My Location"}
+            </button>
+          </div>
+
+          <div className="w-full h-[320px] rounded-2xl overflow-hidden shadow border border-gray-200 relative z-10">
             <MapContainer
-              center={defaultCenter}
-              zoom={5}
+              center={mapCenter}
+              zoom={mapZoom}
               scrollWheelZoom={true}
               className="w-full h-full"
             >
+              <ChangeMapView center={mapCenter} zoom={mapZoom} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

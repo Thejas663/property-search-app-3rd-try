@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -15,7 +15,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const Map = ({ properties }) => {
+// Programmatic map panning helper component
+const ChangeMapView = ({ center, zoom }) => {
+  const map = useMap();
+  React.useEffect(() => {
+    if (center) {
+      map.setView(center, zoom || map.getZoom(), { animate: true });
+    }
+  }, [center, zoom, map]);
+  return null;
+};
+
+const Map = ({ properties, center, zoom }) => {
   // Filter out properties that don't have valid coordinates
   const validProperties = properties.filter(
     (p) => typeof p.latitude === 'number' && typeof p.longitude === 'number'
@@ -32,11 +43,12 @@ const Map = ({ properties }) => {
   return (
     <div className="w-full h-[400px] rounded-3xl overflow-hidden shadow-lg border border-gray-100 my-8 relative z-10">
       <MapContainer
-        center={defaultCenter}
-        zoom={zoomLevel}
+        center={center || defaultCenter}
+        zoom={zoom || zoomLevel}
         scrollWheelZoom={true}
         className="w-full h-full"
       >
+        <ChangeMapView center={center || defaultCenter} zoom={zoom || zoomLevel} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
