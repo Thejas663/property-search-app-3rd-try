@@ -18,7 +18,14 @@ const Item = ({property}) => {
         {/* INFO */}
         <div className='m-3'>
             <div className='flexBetween'>
-                <h5 className='bold-16 my-1 text-secondary'>{property.city}</h5>
+                <div className='flex items-center gap-x-2'>
+                    <h5 className='bold-16 my-1 text-secondary'>{property.city}</h5>
+                    {property.distance !== undefined && property.distance !== null && (
+                        <span className='bg-blue-50 text-blue-600 text-xs font-semibold px-2 py-0.5 rounded-full border border-blue-100'>
+                            {property.distance.toFixed(1)} km away
+                        </span>
+                    )}
+                </div>
                 <h4 className='h4'>${property.price}.00</h4>
             </div>
             <h4 className='medium-18 line-clamp-1'>{property.title}</h4>

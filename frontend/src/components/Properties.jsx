@@ -16,6 +16,22 @@ import Map from './Map';
 import { FaLocationArrow, FaSearch, FaTimes } from 'react-icons/fa';
 
 
+// Haversine formula helper to compute great-circle distance between two points in km
+const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371; // Earth's mean radius in km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const Properties = () => {
   const [allProperties, setAllProperties] = useState(PROPERTIES);       // full list (never filtered)
   const [propertiesList, setPropertiesList] = useState(PROPERTIES);     // displayed list
@@ -28,6 +44,24 @@ const Properties = () => {
   const [radiusKm, setRadiusKm] = useState(10);                         // default 10 km
   const [searchingNearby, setSearchingNearby] = useState(false);
   const [isNearbyActive, setIsNearbyActive] = useState(false);          // true when showing filtered results
+
+  // Recalculate distances for all properties whenever selectedLocation changes
+  useEffect(() => {
+    setPropertiesList((prevList) =>
+      prevList.map((p) => {
+        let distance = null;
+        if (selectedLocation && p.latitude !== undefined && p.longitude !== undefined) {
+          distance = calculateHaversineDistance(
+            selectedLocation.lat,
+            selectedLocation.lng,
+            p.latitude,
+            p.longitude
+          );
+        }
+        return { ...p, distance };
+      })
+    );
+  }, [selectedLocation]);
 
   // Load all properties on mount
   useEffect(() => {
@@ -53,7 +87,21 @@ const Properties = () => {
           }));
           const combined = [...formatted, ...PROPERTIES];
           setAllProperties(combined);
-          setPropertiesList(combined);
+          
+          // Apply initial distances if selectedLocation is already set
+          const initialCalculated = combined.map((p) => {
+            let distance = null;
+            if (selectedLocation && p.latitude !== undefined && p.longitude !== undefined) {
+              distance = calculateHaversineDistance(
+                selectedLocation.lat,
+                selectedLocation.lng,
+                p.latitude,
+                p.longitude
+              );
+            }
+            return { ...p, distance };
+          });
+          setPropertiesList(initialCalculated);
         }
       } catch (err) {
         console.error("Failed to fetch properties from DB", err);
@@ -127,21 +175,28 @@ const Properties = () => {
       const res = await fetch(`/api/properties/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
       if (res.ok) {
         const data = await res.json();
-        const formatted = (data.data || []).map((p) => ({
-          id: p.id,
-          title: p.title,
-          description: p.description,
-          price: p.price,
-          image: p.image,
-          city: p.city || 'Unknown',
-          latitude: p.latitude,
-          longitude: p.longitude,
-          facilities: {
-            bedrooms: p.bedrooms || 0,
-            bathrooms: p.bathrooms || 0,
-            parkings: p.parkings || 0
+        const formatted = (data.data || []).map((p) => {
+          let distance = null;
+          if (p.latitude !== undefined && p.longitude !== undefined) {
+            distance = calculateHaversineDistance(lat, lng, p.latitude, p.longitude);
           }
-        }));
+          return {
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            price: p.price,
+            image: p.image,
+            city: p.city || 'Unknown',
+            latitude: p.latitude,
+            longitude: p.longitude,
+            distance,
+            facilities: {
+              bedrooms: p.bedrooms || 0,
+              bathrooms: p.bathrooms || 0,
+              parkings: p.parkings || 0
+            }
+          };
+        });
         setPropertiesList(formatted);
         setIsNearbyActive(true);
       } else {
