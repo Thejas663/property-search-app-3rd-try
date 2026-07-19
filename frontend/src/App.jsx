@@ -9,6 +9,7 @@ import Listing from './pages/Listing'
 import Contact from './pages/Contact'
 import AddProperty from './pages/AddProperty'
 import Profile from './pages/Profile'
+import PropertyDetails from './pages/PropertyDetails'
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/property/:id" element={<PropertyDetails />} />
       </Routes>
       <Footer/>
     </BrowserRouter>

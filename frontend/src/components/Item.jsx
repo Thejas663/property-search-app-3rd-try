@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import {FaHeart} from "react-icons/fa"
 import {MdOutlineBed,MdOutlineBathtub,MdOutlineGarage} from "react-icons/md"
 import { CgRuler } from 'react-icons/cg'
@@ -10,7 +11,9 @@ const Item = ({property}) => {
     <div className='rounded-lg overflow-hidden bg-white ring-1 ring-slate-900/5'>
         {/* IMAGE */}
         <div className='relative'>
-            <img src={property.image} alt={property.title} className='h-[13rem] w-full aspect-square object-cover' />
+            <Link to={`/property/${property.id}`}>
+                <img src={property.image} alt={property.title} className='h-[13rem] w-full aspect-square object-cover cursor-pointer hover:opacity-90 transition-opacity' />
+            </Link>
             <div className='absolute top-4 right-6'>
                 <FaHeart className='text-white text-lg'/>
             </div>
@@ -28,7 +31,9 @@ const Item = ({property}) => {
                 </div>
                 <h4 className='h4'>${property.price}.00</h4>
             </div>
-            <h4 className='medium-18 line-clamp-1'>{property.title}</h4>
+            <Link to={`/property/${property.id}`}>
+                <h4 className='medium-18 line-clamp-1 hover:text-secondary transition-colors cursor-pointer'>{property.title}</h4>
+            </Link>
             <div className='flex gap-x-2 py-2'>
                 <div className='flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-[500]'>
                     <MdOutlineBed/> {property.facilities.bedrooms}
