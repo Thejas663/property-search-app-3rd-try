@@ -4,27 +4,32 @@ import {VscSettings} from "react-icons/vsc"
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-// Import Swiper styl
+// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
-
 
 // import required modules
 import { Autoplay} from 'swiper/modules';
 import { PROPERTIES } from '../constant/data';
 import Item from './Item';
 import Map from './Map';
-import { FaLocationArrow } from 'react-icons/fa';
+import { FaLocationArrow, FaSearch, FaTimes } from 'react-icons/fa';
 
 
 const Properties = () => {
-  const [propertiesList, setPropertiesList] = useState(PROPERTIES);
+  const [allProperties, setAllProperties] = useState(PROPERTIES);       // full list (never filtered)
+  const [propertiesList, setPropertiesList] = useState(PROPERTIES);     // displayed list
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [mapCenter, setMapCenter] = useState(null);
   const [mapZoom, setMapZoom] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);       // { lat, lng } when a location is pinned
+  const [radiusKm, setRadiusKm] = useState(10);                         // default 10 km
+  const [searchingNearby, setSearchingNearby] = useState(false);
+  const [isNearbyActive, setIsNearbyActive] = useState(false);          // true when showing filtered results
 
+  // Load all properties on mount
   useEffect(() => {
     const fetchDBProperties = async () => {
       try {
@@ -46,8 +51,9 @@ const Properties = () => {
               parkings: p.parkings || 0
             }
           }));
-          // Show DB-fetched properties first, followed by mock data
-          setPropertiesList([...formatted, ...PROPERTIES]);
+          const combined = [...formatted, ...PROPERTIES];
+          setAllProperties(combined);
+          setPropertiesList(combined);
         }
       } catch (err) {
         console.error("Failed to fetch properties from DB", err);
@@ -56,6 +62,7 @@ const Properties = () => {
     fetchDBProperties();
   }, []);
 
+  // ── Address autocomplete ─────────────────────────────────────────────
   const handleSearchChange = async (e) => {
     const val = e.target.value;
     setSearchQuery(val);
@@ -81,8 +88,10 @@ const Properties = () => {
     setMapZoom(13);
     setSearchQuery(s.display_name);
     setSuggestions([]);
+    setSelectedLocation({ lat, lng: lon });
   };
 
+  // ── Geolocation ──────────────────────────────────────────────────────
   const handleUseMyLocation = () => {
     if (navigator.geolocation) {
       setLoadingLocation(true);
@@ -92,6 +101,7 @@ const Properties = () => {
           const lon = position.coords.longitude;
           setMapCenter([lat, lon]);
           setMapZoom(13);
+          setSelectedLocation({ lat, lng: lon });
           setLoadingLocation(false);
         },
         (err) => {
@@ -105,20 +115,87 @@ const Properties = () => {
     }
   };
 
+  // ── Proximity search ─────────────────────────────────────────────────
+  const handleSearchNearby = async () => {
+    if (!selectedLocation) {
+      alert("Please enter an address or use your location first.");
+      return;
+    }
+    setSearchingNearby(true);
+    try {
+      const { lat, lng } = selectedLocation;
+      const res = await fetch(`/api/properties/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`);
+      if (res.ok) {
+        const data = await res.json();
+        const formatted = (data.data || []).map((p) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          price: p.price,
+          image: p.image,
+          city: p.city || 'Unknown',
+          latitude: p.latitude,
+          longitude: p.longitude,
+          facilities: {
+            bedrooms: p.bedrooms || 0,
+            bathrooms: p.bathrooms || 0,
+            parkings: p.parkings || 0
+          }
+        }));
+        setPropertiesList(formatted);
+        setIsNearbyActive(true);
+      } else {
+        alert("Nearby search failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Nearby search error", err);
+      alert("Could not reach the server. Is the backend running?");
+    } finally {
+      setSearchingNearby(false);
+    }
+  };
+
+  // ── Clear nearby filter ───────────────────────────────────────────────
+  const handleClearNearby = () => {
+    setPropertiesList(allProperties);
+    setIsNearbyActive(false);
+    setSelectedLocation(null);
+    setSearchQuery('');
+    setMapCenter(null);
+    setMapZoom(null);
+  };
+
   return (
     <section className='max-padd-container'>
         <div className='py-16 xl:py-28 rounded-3xl'>
             <span className='medium-18'>Your future Home awaits!</span>
             <h2 className='h2'>Find your dream here</h2>
             <div className='flexBetween mt-8 mb-6'>
-                <h5><span className='font-bold'>Showing 1-{propertiesList.length}</span> properties</h5>
-                <Link to={"/"} className='bg-secondary text-white text-2xl rounded-md p-2 flexCenter'>
-                <VscSettings/>
-                </Link>
+                <h5>
+                  <span className='font-bold'>
+                    {isNearbyActive
+                      ? `${propertiesList.length} properties within ${radiusKm} km`
+                      : `Showing 1-${propertiesList.length}`}
+                  </span>
+                  {!isNearbyActive && ' properties'}
+                </h5>
+                <div className="flex items-center gap-2">
+                  {isNearbyActive && (
+                    <button
+                      onClick={handleClearNearby}
+                      className="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold rounded-full px-4 py-1.5 border border-red-200 transition-colors cursor-pointer"
+                    >
+                      <FaTimes className="text-xs" /> Show All
+                    </button>
+                  )}
+                  <Link to={"/"} className='bg-secondary text-white text-2xl rounded-md p-2 flexCenter'>
+                    <VscSettings/>
+                  </Link>
+                </div>
             </div>
-            
-            {/* Search and Geolocation Controls */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-4 relative z-20">
+
+            {/* ── Row 1: Address search + Geolocation ── */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-3 relative z-20">
               <div className="flex-1 relative">
                 <input
                   type="text"
@@ -151,41 +228,89 @@ const Properties = () => {
               </button>
             </div>
 
-            {/* Map showing all property markers */}
+            {/* ── Row 2: Radius selector + Search Nearby ── */}
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <span className="text-sm font-semibold text-gray-600">Radius:</span>
+              {[5, 10, 20, 50].map((km) => (
+                <button
+                  key={km}
+                  onClick={() => setRadiusKm(km)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors cursor-pointer ${
+                    radiusKm === km
+                      ? 'bg-secondary text-white border-secondary'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-secondary hover:text-secondary'
+                  }`}
+                >
+                  {km} km
+                </button>
+              ))}
+              <button
+                onClick={handleSearchNearby}
+                disabled={searchingNearby || !selectedLocation}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-full px-6 py-2 shadow transition-colors cursor-pointer ml-auto"
+              >
+                <FaSearch />
+                {searchingNearby ? "Searching..." : "Search Nearby"}
+              </button>
+            </div>
+
+            {/* ── Location pin indicator ── */}
+            {selectedLocation && !isNearbyActive && (
+              <p className="text-sm text-green-600 font-medium mb-3">
+                📍 Location pinned — click <strong>Search Nearby</strong> to find properties within {radiusKm} km.
+              </p>
+            )}
+            {isNearbyActive && (
+              <p className="text-sm text-blue-600 font-medium mb-3">
+                🗺️ Showing <strong>{propertiesList.length}</strong> properties within <strong>{radiusKm} km</strong> of your selected location.
+              </p>
+            )}
+
+            {/* Map showing property markers */}
             <Map properties={propertiesList} center={mapCenter} zoom={mapZoom} />
 
             {/* CONTAINER */}
-            <Swiper
-        autoplay={{
-          delay: 4000,
-          disableOnInteraction: false,
-        }}
-        breakpoints={{
-            600:{
-                slidesPerView:2,
-                spaceBetween:30,
-            },
-            1124:{
-                slidesPerView:3,
-                spaceBetween:30,
-            },
-            1300:{
-                slidesPerView:4,
-                spaceBetween:30,
-            }
-        }}
-        
-        modules={[Autoplay]}
-        className="h-[488px] md:h-[533px] xl:h-[422px] mt-5"
-      >
-        {propertiesList.map((property, idx)=>(
-          <SwiperSlide key={property.id || `${property.title}-${idx}`}>
-            <Item property={property}/>
-          </SwiperSlide>
-
-        ))}
-        
-      </Swiper>
+            {propertiesList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-2xl font-bold text-gray-400 mb-2">No properties found</p>
+                <p className="text-gray-400 mb-6">No properties exist within {radiusKm} km of your location.</p>
+                <button
+                  onClick={handleClearNearby}
+                  className="bg-secondary text-white font-semibold rounded-full px-8 py-3 hover:bg-secondary/90 transition-colors cursor-pointer"
+                >
+                  Show All Properties
+                </button>
+              </div>
+            ) : (
+              <Swiper
+                autoplay={{
+                  delay: 4000,
+                  disableOnInteraction: false,
+                }}
+                breakpoints={{
+                    600:{
+                        slidesPerView:2,
+                        spaceBetween:30,
+                    },
+                    1124:{
+                        slidesPerView:3,
+                        spaceBetween:30,
+                    },
+                    1300:{
+                        slidesPerView:4,
+                        spaceBetween:30,
+                    }
+                }}
+                modules={[Autoplay]}
+                className="h-[488px] md:h-[533px] xl:h-[422px] mt-5"
+              >
+                {propertiesList.map((property, idx) => (
+                  <SwiperSlide key={property.id || `${property.title}-${idx}`}>
+                    <Item property={property}/>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
         </div>
     </section>
   )

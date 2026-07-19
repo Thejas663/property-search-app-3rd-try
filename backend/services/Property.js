@@ -59,6 +59,35 @@ export const getAllProperties = async () => {
   }))
 }
 
+export const getNearbyProperties = async (lat, lng, radiusKm) => {
+  const radiusMeters = radiusKm * 1000;
+  const properties = await PropertyModel.find({
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lng, lat]   // MongoDB: [longitude, latitude]
+        },
+        $maxDistance: radiusMeters
+      }
+    }
+  });
+  return properties.map((property) => ({
+    id: property._id,
+    title: property.title,
+    description: property.description,
+    price: property.price,
+    image: property.image,
+    city: property.city,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    parkings: property.parkings,
+    createdBy: property.createdBy,
+    latitude: property.location?.coordinates?.[1],
+    longitude: property.location?.coordinates?.[0]
+  }))
+}
+
 export const getUserProperties = async (userId) => {
   const properties = await PropertyModel.find({ createdBy: userId })
   return properties.map((property) => ({
