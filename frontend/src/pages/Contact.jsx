@@ -2,22 +2,52 @@ import React, { useState } from 'react';
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSending(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit query. Please try again.');
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err.message || 'Something went wrong.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <div className="mx-auto mt-20 max-w-[600px] p-8">
       <h1 className="text-3xl font-bold mb-4">Contact Us</h1>
+      {error && (
+        <div className="bg-red-50 text-red-600 border border-red-200 px-4 py-3 rounded-lg mb-4 text-sm font-medium">
+          {error}
+        </div>
+      )}
       {submitted ? (
-        <div className="text-green-600 font-semibold">Thank you for contacting us!</div>
+        <div className="text-green-600 font-semibold text-lg">Thank you for contacting us! We'll get back to you shortly.</div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
@@ -47,7 +77,13 @@ const Contact = () => {
             rows={4}
             required
           />
-          <button type="submit" className="bg-blue-500 text-white p-2 rounded">Send</button>
+          <button 
+            type="submit" 
+            disabled={sending}
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-2 rounded transition-colors font-semibold cursor-pointer"
+          >
+            {sending ? 'Sending...' : 'Send'}
+          </button>
         </form>
       )}
     </div>
