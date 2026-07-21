@@ -24,15 +24,22 @@ const Contact = () => {
         body: JSON.stringify(form),
       });
 
+      // Check if response is JSON before parsing
+      // (Render free tier returns HTML during cold start wake-up)
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('The server is warming up. Please wait a few seconds and try again.');
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit query. Please try again.');
+        throw new Error(data.message || 'Failed to submit. Please try again.');
       }
 
       setSubmitted(true);
     } catch (err) {
-      setError(err.message || 'Something went wrong.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSending(false);
     }
