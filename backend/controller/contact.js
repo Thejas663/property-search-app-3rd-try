@@ -14,17 +14,23 @@ export const sendContactEmail = async (req, res) => {
   const hasConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
 
   const mailOptions = {
-    from: `"${name}" <${email}>`,
-    to: process.env.CONTACT_RECEIVER_EMAIL || process.env.EMAIL_USER || 'your_email@gmail.com',
-    subject: `New Contact Form Query from ${name}`,
-    text: `You have received a new contact form query:\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
+    // Must send FROM your own Gmail account (authenticated sender)
+    from: `"Zenhomes Contact" <${process.env.EMAIL_USER}>`,
+    to: process.env.CONTACT_RECEIVER_EMAIL || process.env.EMAIL_USER,
+    // Include visitor's email in the subject so you know who sent it
+    subject: `New Message from ${name} (${email})`,
+    text: `You have received a new contact form message:\n\nName: ${name}\nEmail: ${email}\nMessage:\n${message}`,
     html: `
-      <h3>New Contact Form Query</h3>
+      <h3>New Contact Form Message</h3>
       <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
       <p><strong>Message:</strong></p>
       <p style="white-space: pre-wrap; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">${message}</p>
+      <hr/>
+      <p style="color: #888; font-size: 12px;">Sent via Zenhomes contact form</p>
     `,
+    // "Reply-To" lets you reply directly to the visitor's email
+    replyTo: email,
   };
 
   if (!hasConfig) {
@@ -42,11 +48,17 @@ export const sendContactEmail = async (req, res) => {
   }
 
   try {
+    // Use explicit Gmail SMTP config for better reliability on cloud hosts
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // Default service (can be changed to host/port configuration)
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // Use STARTTLS on port 587
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false, // Prevent TLS cert issues on cloud
       },
     });
 
